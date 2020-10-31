@@ -173,7 +173,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         imgpoints = [] # 2d points in image plane.
 
         #read all the images from folder
-        images = glob.glob('../images/CameraCalibration/*.bmp')
+        images = glob.glob('../Q2_Image/*.bmp')
 
         for fname in images:
             img = cv.imread(fname)
@@ -209,11 +209,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         objp = np.zeros((8*11,3), np.float32)
         objp[:,:2] = np.mgrid[0:11,0:8].T.reshape(-1,2)
-        axis = np.float32([[0,0,0], [0,2,0], [2,2,0], [2,0,0],[0,0,-2],[0,2,-2],[2,2,-2],[2,0,-2] ])
+        axis = np.float32([[3,3,-3], [5,1,0], [3,5,0], [3,3,-3],[1,1,0],[5,1,0],[1,1,0],[1,1,0] ])
 
         # declare a array to store video frame
         Video_img=[]
-        for fname in glob.glob('../images/Augment/*.bmp'):
+        for fname in glob.glob('../Q2_Image/*.bmp'):
             img = cv.imread(fname)
             gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
             ret, corners = cv.findChessboardCorners(gray, (11,8),None)
