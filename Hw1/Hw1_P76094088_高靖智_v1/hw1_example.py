@@ -26,8 +26,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn4_2.clicked.connect(self.on_btn4_2_click)
 
     def on_btn1_1_click(self):
-        # termination criteria
-        criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
         # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
         objp = np.zeros((8*11,3), np.float32)
@@ -38,11 +36,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         imgpoints = [] # 2d points in image plane.
 
         #read all the images from folder
-        images= glob.glob('../images/CameraCalibration/*.bmp')
+        images= glob.glob('../Q1_Image/*.bmp')
 
         i=0
         for fname in images:
             img = cv.imread(fname)
+            if img is None:
+                print("Failed to load", fn)
+                return None
             gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
 
             # Find the chess board corners
@@ -52,7 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             i=i+1
             if ret == True:
                 objpoints.append(objp)
-                corners2 = cv.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+                corners2 = cv.cornerSubPix(gray,corners,(11,11),(-1,-1),(cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001))
                 imgpoints.append(corners2)
 
                 # Draw and display the corners
