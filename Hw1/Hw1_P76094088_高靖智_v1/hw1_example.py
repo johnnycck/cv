@@ -21,7 +21,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn1_4.clicked.connect(self.on_btn1_4_click)
         self.btn2_1.clicked.connect(self.on_btn2_1_click)
         self.btn3_1.clicked.connect(self.on_btn3_1_click)
-        self.btn3_2.clicked.connect(self.on_btn3_2_click)
         self.btn4_1.clicked.connect(self.on_btn4_1_click)
         self.btn4_2.clicked.connect(self.on_btn4_2_click)
 
@@ -238,70 +237,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for j in range(0,5):
             video.write(Video_img[j])
 
-        cv.destroyAllWindows()
+    cv.destroyAllWindows()
 
     def on_btn3_1_click(self):
-        # read the image
-        img = cv.imread('../images/OriginalTransform.png')
-
-        # read the transform data from ui
-        edtAngle = float(self.edtAngle.text())
-        edtScale = float(self.edtScale.text())
-        edtTx = float(self.edtTx.text())
-        edtTy = float(self.edtTy.text())
-
-        # making translate matrix
-        H = np.float32([[1,0,edtTx],[0,1,edtTy]])
-
-        # translate the small squared image
-        rows,cols = img.shape[:2]
-        Translate_img = cv.warpAffine(img,H,(rows,cols))
-
-        # making rotate and scale matrix
-        rows,cols = Translate_img.shape[:2]
-        M = cv.getRotationMatrix2D((130+edtTy,125+edtTy),edtAngle,edtScale)
-
-        #rotate and scale the small squared image
-        result = cv.warpAffine(Translate_img,M,(rows,cols))
-
-        #show the result
-        cv.imshow('Original Image', img)
-        cv.imshow('Rotation + Translate + Scale Imag',result)
-
-    def on_btn3_2_click(self):
-        # declare 2 point array
-        pts1=[]
-        pts2 = np.float32([[20,20],[450,20],[450,450],[20,450]])
-
-        def CallBack(event,x,y,flags,param):
-
-            # if clicked doing the following things
-            if event == cv.EVENT_LBUTTONDOWN:
-                nonlocal pts1
-                pts1.append([x,y])
-
-                # if clicked th images for four times, then wraping the origin to the perspective image
-                if len(pts1)==4:
-                    pts1 = np.float32(pts1)
-                    M = cv.getPerspectiveTransform(pts1,pts2)
-                    dst = cv.warpPerspective(img,M,(450,450))
-                    print(pts1)
-                    cv.imshow('Perspective Result Image', dst)
-
-        img = cv.imread('../images/OriginalPerspective.png')
-        cv.namedWindow('origin')
-        cv.imshow('origin',img)
-
-        # add `setMouseCallback()` to the window
-        cv.setMouseCallback('origin',CallBack)
-
-    def on_btn4_1_click(self):
         # read left and right images
-        imgL = cv.imread('../images/imL.png',0)
-        imgR = cv.imread('../images/imR.png',0)
+        imgL = cv.imread('../Q3_Image/imL.png',0)
+        imgR = cv.imread('../Q3_Image/imR.png',0)
 
         # making disparity map
-        stereo = cv.StereoSGBM_create(numDisparities=48, blockSize=3) #the third parameter
+        stereo = cv.StereoSGBM_create(numDisparities=32, blockSize=5) #the third parameter
         disparity = stereo.compute(imgL,imgR)
 
         # normalization
@@ -309,41 +253,53 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         normalized_img = cv.normalize(disparity, normalized_img, 0, 255, cv.NORM_MINMAX,cv.CV_8U)
 
         cv.imshow('Without L-R Disparity Check',normalized_img)
+    
+    def on_btn4_1_click(self):
+        bird1 = cv2.imread('../Q4_Image/Aerial1.jpg')
+        gray1= cv2.cvtColor(bird1,cv2.COLOR_BGR2GRAY)
+        # construct a SIFT object
+        sift1 = cv2.xfeatures2d.SIFT_create()
+        # finds the keypoint
+        kp1, des1 = sift1.detectAndCompute(gray1,None)
+        # find the feature point at P(179.9, 114.0)
+        i = 0
+        while 1:
+            i = i+1
+            if(round(kp1[i-1].pt[0],1) == 179.9):
+                print(kp1[i-1].angle)
+                break
+        # draw the keypoint P(179.9, 114.0)
+        img1=cv2.drawKeypoints(gray1,kp1[i-1:i],bird1,flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        # plot the result
+        des_list =  des1[i-1]
 
-
+        plt.subplot(1,2,1),plt.imshow(img1)
+        plt.title('bird1'), plt.xticks([]), plt.yticks([])
+        plt.subplot(1,2,2),plt.bar(range(len(des_list)), height=des_list, width=0.4, alpha=0.8, color='blue')
+        plt.ylim(0, 180)
+        plt.title('featureVectorHistogram')
+        plt.show() 
     def on_btn4_2_click(self):
-        # read left and right images
-        imgL = cv.imread('../images/imL.png',0)
-        imgR = cv.imread('../images/imR.png',0)
-
-        # making disparity map without checked
-        stereo = cv.StereoSGBM_create(numDisparities=48, blockSize=3, disp12MaxDiff=0) #the third parameter
-        disparity = stereo.compute(imgL,imgR)
-
-        # making disparity map with checked
-        stereo_checked = cv.StereoSGBM_create(numDisparities=48, blockSize=3, disp12MaxDiff=2)
-        disparity_checked = stereo_checked.compute(imgL, imgR)
-
-        # normalization
-        normalized_img = np.zeros((800, 800))
-        normalized_img = cv.normalize(disparity, normalized_img, 0, 255, cv.NORM_MINMAX,cv.CV_8U)
-        cv.imshow('Without the left-right disparity check',normalized_img)
-
-        normalized_checked = np.zeros((800, 800))
-        normalized_checked = cv.normalize(disparity_checked, normalized_checked, 0, 255, cv.NORM_MINMAX,cv.CV_8U)
-        cv.imshow('With the left-right disparity check',normalized_checked)
-
-        # count the difference
-        diff = cv.absdiff(normalized_img, normalized_checked)
-        (x,y) = np.where(diff>0)
-
-        diff_img = cv.cvtColor(normalized_checked,cv.COLOR_GRAY2RGB)
-
-        for i in range(len(x)):
-            diff_img[x[i],y[i]] = (0,0,255)
-        cv.imshow('Mark The Diff',diff_img)
-
-
+        bird1 = cv2.imread('../Q4_Image/Aerial1.jpg')
+        bird2 = cv2.imread('../Q4_Image/Aerial2.jpg')
+        gray1= cv2.cvtColor(bird1,cv2.COLOR_BGR2GRAY)
+        gray2= cv2.cvtColor(bird2,cv2.COLOR_BGR2GRAY)
+        # construct a SIFT object
+        sift1 = cv2.xfeatures2d.SIFT_create()
+        sift2 = cv2.xfeatures2d.SIFT_create()
+        # finds the keypoint
+        kp1, des1 = sift1.detectAndCompute(gray1,None)
+        kp2, des2 = sift2.detectAndCompute(gray2,None)
+        # print(kp1[0].pt)
+        img1=cv2.drawKeypoints(gray1,kp1[213:219],bird1)
+        img2=cv2.drawKeypoints(gray2,kp2[214:220],bird2)
+        # save the image
+        cv2.imwrite('FeatureBird1.jpg',img1)
+        cv2.imwrite('FeatureBird2.jpg',img2)
+        # show the result
+        cv2.imshow('result1',np.hstack((img1,img2)))
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
