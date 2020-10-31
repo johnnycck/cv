@@ -6,6 +6,7 @@ import cv2 as cv
 import numpy as np
 import glob
 import os
+from matplotlib import pyplot as plt
 from PyQt5.QtWidgets import QMainWindow, QApplication
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -255,51 +256,55 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cv.imshow('Without L-R Disparity Check',normalized_img)
     
     def on_btn4_1_click(self):
-        bird1 = cv2.imread('../Q4_Image/Aerial1.jpg')
-        gray1= cv2.cvtColor(bird1,cv2.COLOR_BGR2GRAY)
+        aerial1 = cv.imread('../Q4_Image/Aerial1.jpg')
+        aerial2 = cv.imread('../Q4_Image/Aerial2.jpg')
+        gray1= cv.cvtColor(aerial1,cv.COLOR_BGR2GRAY)
+        gray2= cv.cvtColor(aerial2,cv.COLOR_BGR2GRAY)
         # construct a SIFT object
-        sift1 = cv2.xfeatures2d.SIFT_create()
-        # finds the keypoint
-        kp1, des1 = sift1.detectAndCompute(gray1,None)
-        # find the feature point at P(179.9, 114.0)
-        i = 0
-        while 1:
-            i = i+1
-            if(round(kp1[i-1].pt[0],1) == 179.9):
-                print(kp1[i-1].angle)
-                break
-        # draw the keypoint P(179.9, 114.0)
-        img1=cv2.drawKeypoints(gray1,kp1[i-1:i],bird1,flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-        # plot the result
-        des_list =  des1[i-1]
-
-        plt.subplot(1,2,1),plt.imshow(img1)
-        plt.title('bird1'), plt.xticks([]), plt.yticks([])
-        plt.subplot(1,2,2),plt.bar(range(len(des_list)), height=des_list, width=0.4, alpha=0.8, color='blue')
-        plt.ylim(0, 180)
-        plt.title('featureVectorHistogram')
-        plt.show() 
-    def on_btn4_2_click(self):
-        bird1 = cv2.imread('../Q4_Image/Aerial1.jpg')
-        bird2 = cv2.imread('../Q4_Image/Aerial2.jpg')
-        gray1= cv2.cvtColor(bird1,cv2.COLOR_BGR2GRAY)
-        gray2= cv2.cvtColor(bird2,cv2.COLOR_BGR2GRAY)
-        # construct a SIFT object
-        sift1 = cv2.xfeatures2d.SIFT_create()
-        sift2 = cv2.xfeatures2d.SIFT_create()
+        sift1 = cv.xfeatures2d.SIFT_create()
+        sift2 = cv.xfeatures2d.SIFT_create()
         # finds the keypoint
         kp1, des1 = sift1.detectAndCompute(gray1,None)
         kp2, des2 = sift2.detectAndCompute(gray2,None)
         # print(kp1[0].pt)
-        img1=cv2.drawKeypoints(gray1,kp1[213:219],bird1)
-        img2=cv2.drawKeypoints(gray2,kp2[214:220],bird2)
+        img1=cv.drawKeypoints(gray1,kp1[180:187],aerial1)
+        img2=cv.drawKeypoints(gray2,kp2[188:195],aerial2)
         # save the image
-        cv2.imwrite('FeatureBird1.jpg',img1)
-        cv2.imwrite('FeatureBird2.jpg',img2)
+        cv.imwrite('FeatureAerial1.jpg',img1)
+        cv.imwrite('FeatureAerial2.jpg',img2)
         # show the result
-        cv2.imshow('result1',np.hstack((img1,img2)))
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        cv.imshow('result1',np.hstack((img1,img2)))
+        cv.waitKey(0)
+        cv.destroyAllWindows()
+    def on_btn4_2_click(self):
+        aerial1 = cv.imread('../Q4_Image/Aerial1.jpg')
+        aerial2 = cv.imread('../Q4_Image/Aerial2.jpg')
+        gray1= cv.cvtColor(aerial1,cv.COLOR_BGR2GRAY)
+        gray2= cv.cvtColor(aerial2,cv.COLOR_BGR2GRAY)
+        # construct a SIFT object
+        sift1 = cv.xfeatures2d.SIFT_create()
+        sift2 = cv.xfeatures2d.SIFT_create()
+        # finds the keypoint
+        kp1, des1 = sift1.detectAndCompute(gray1,None)
+        kp2, des2 = sift2.detectAndCompute(gray2,None)
+        test1 = des1[213:219]
+        test2 = des2[214:220]
+        # BFMatcher with default params
+        bf = cv.BFMatcher()
+        matches = bf.knnMatch( test1, test2, k=2 )
+        # Apply ratio test
+        good = []
+        i = 0
+        for m,n in matches:
+            i = i+1
+            if m.distance < 0.75*n.distance:
+                good.append([m])
+        # cv.drawMatchesKnn expects list of lists as matches.
+        img3 = cv.drawMatchesKnn(gray1,kp1[213:219],gray2,kp2[214:220],good,None,flags=2)
+        plt.axis("off")
+        plt.imshow(img3)
+        plt.show() 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
