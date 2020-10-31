@@ -133,8 +133,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def on_btn1_4_click(self):
-        # termination criteria
-        criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
         # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
         objp = np.zeros((8*11,3), np.float32)
@@ -145,7 +143,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         imgpoints = [] # 2d points in image plane.
 
         #read all the images from folder
-        images = glob.glob('../images/CameraCalibration/*.bmp')
+        images = glob.glob('../Q1_Image/*.bmp')
         for fname in images:
             img = cv.imread(fname)
             gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
@@ -156,7 +154,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # If found, add object points, image points (after refining them)
             if ret == True:
                 objpoints.append(objp)
-                corners2 = cv.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+                corners2 = cv.cornerSubPix(gray,corners,(11,11),(-1,-1),(cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001))
                 imgpoints.append(corners2)
         ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
         print(dist)
