@@ -78,7 +78,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         imgpoints = [] # 2d points in image plane.
 
         #read all the images from folder
-        images= glob.glob('../images/CameraCalibration/*.bmp')
+        images= glob.glob('../Q1_Image/*.bmp')
 
         i=0
         for fname in images:
@@ -92,7 +92,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             i=i+1
             if ret == True:
                 objpoints.append(objp)
-                corners2 = cv.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+                corners2 = cv.cornerSubPix(gray,corners,(11,11),(-1,-1),(cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001))
                 imgpoints.append(corners2)
         ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
         print(mtx)
