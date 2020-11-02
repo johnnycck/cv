@@ -266,19 +266,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # finds the keypoint
         kp1, des1 = sift1.detectAndCompute(gray1,None)
         kp2, des2 = sift2.detectAndCompute(gray2,None)
+        
         # print(kp1[0].pt)
-        img1=cv.drawKeypoints(gray1,kp1[180:187],aerial1)
-        img2=cv.drawKeypoints(gray2,kp2[188:195],aerial2)
+        img1=cv.drawKeypoints(gray1,kp1[4800:4806],aerial1)
+        img2=cv.drawKeypoints(gray2,kp2[3750:3756],aerial2)
         # save the image
-        cv.imwrite('FeatureAerial1.jpg',img1)
-        cv.imwrite('FeatureAerial2.jpg',img2)
+        cv.imwrite('../Q4_Image/FeatureAerial1.jpg',img1)
+        cv.imwrite('../Q4_Image/FeatureAerial2.jpg',img2)
         # show the result
         cv.imshow('result1',np.hstack((img1,img2)))
         cv.waitKey(0)
         cv.destroyAllWindows()
     def on_btn4_2_click(self):
-        aerial1 = cv.imread('../Q4_Image/Aerial1.jpg')
-        aerial2 = cv.imread('../Q4_Image/Aerial2.jpg')
+        aerial1 = cv.imread('../Q4_Image/FeatureAerial1.jpg')
+        aerial2 = cv.imread('../Q4_Image/FeatureAerial2.jpg')
         gray1= cv.cvtColor(aerial1,cv.COLOR_BGR2GRAY)
         gray2= cv.cvtColor(aerial2,cv.COLOR_BGR2GRAY)
         # construct a SIFT object
@@ -287,8 +288,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # finds the keypoint
         kp1, des1 = sift1.detectAndCompute(gray1,None)
         kp2, des2 = sift2.detectAndCompute(gray2,None)
-        test1 = des1[213:219]
-        test2 = des2[214:220]
+        test1 = des1[4800:4806]
+        test2 = des2[3750:3756]
         # BFMatcher with default params
         bf = cv.BFMatcher()
         matches = bf.knnMatch( test1, test2, k=2 )
@@ -297,10 +298,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         i = 0
         for m,n in matches:
             i = i+1
-            if m.distance < 0.75*n.distance:
-                good.append([m])
+            good.append([m])
         # cv.drawMatchesKnn expects list of lists as matches.
-        img3 = cv.drawMatchesKnn(gray1,kp1[213:219],gray2,kp2[214:220],good,None,flags=2)
+        img3 = cv.drawMatchesKnn(gray1,kp1[4800:4806],gray2,kp2[3750:3756],good,None,flags=2)
         plt.axis("off")
         plt.imshow(img3)
         plt.show() 
